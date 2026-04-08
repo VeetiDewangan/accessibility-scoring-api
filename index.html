@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessibility AI | Scoring Engine</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f7f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .header-gradient { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 15px 15px 0 0; padding: 20px; }
+        .btn-primary { background: #764ba2; border: none; padding: 12px; border-radius: 8px; font-weight: 600; }
+        .score-display { font-size: 3rem; font-weight: bold; color: #764ba2; }
+        #result-section { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="header-gradient text-center">
+                    <h2 class="mb-0">Accessibility Scoring Engine</h2>
+                    <p class="mb-0 opacity-75">AI-Powered Venue Compliance Analysis</p>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Doorway Width (cm)</label>
+                            <input type="number" id="width" class="form-control" value="90">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ramp Angle (deg)</label>
+                            <input type="number" id="angle" class="form-control" value="5">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Path Blocked?</label>
+                            <select id="blocked" class="form-select">
+                                <option value="0">No (Clear)</option>
+                                <option value="1">Yes (Obstructed)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Violations Count</label>
+                            <input type="number" id="violations" class="form-control" value="0">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">User Review Sentiment Analysis</label>
+                            <textarea id="review" class="form-control" rows="3" placeholder="Describe the accessibility experience..."></textarea>
+                        </div>
+                        <div class="col-12 mt-4">
+                            <button onclick="calculate()" class="btn btn-primary w-100">Analyze Accessibility</button>
+                        </div>
+                    </div>
+
+                    <div id="result-section" class="mt-5 border-top pt-4 text-center">
+                        <h4 class="text-muted">Final Accessibility Score</h4>
+                        <div class="score-display" id="final-score">0.0</div>
+                        <div id="badge" class="badge rounded-pill mb-3">Checking...</div>
+                        <p class="text-muted">Review Sentiment: <strong id="sentiment-val">0.0</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function calculate() {
+        const payload = {
+            Doorway_Width_cm: parseFloat(document.getElementById('width').value),
+            Ramp_Angle_deg: parseFloat(document.getElementById('angle').value),
+            Clear_Path_Blocked: parseInt(document.getElementById('blocked').value),
+            Compliance_Violations: parseInt(document.getElementById('violations').value),
+            User_Review_Text: document.getElementById('review').value
+        };
+
+        const res = await fetch('http://127.0.0.1:8000/api/score', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        document.getElementById('result-section').style.display = 'block';
+        const score = data.venue_score;
+        document.getElementById('final-score').innerText = score;
+        document.getElementById('sentiment-val').innerText = data.review_sentiment;
+
+        const badge = document.getElementById('badge');
+        if (score >= 80) { badge.innerText = "Highly Accessible"; badge.className = "badge rounded-pill bg-success"; }
+        else if (score >= 50) { badge.innerText = "Moderate Access"; badge.className = "badge rounded-pill bg-warning text-dark"; }
+        else { badge.innerText = "Poor Accessibility"; badge.className = "badge rounded-pill bg-danger"; }
+    }
+</script>
+</body>
+</html>

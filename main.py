@@ -6,8 +6,20 @@ import numpy as np
 import nltk
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
+from fastapi.middleware.cors import CORSMiddleware
+
+
+
 # Initialize FastAPI App
 app = FastAPI(title="Dynamic Accessibility Scoring Engine")
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # Allows all origins for local testing
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # --- 1. Load the Model and NLP Tools ---
 
@@ -81,3 +93,6 @@ def predict_score(data: VenueData):
 @app.get("/")
 def home():
     return {"message": "Welcome to the Dynamic Accessibility Scoring Engine API. Use /api/score for predictions."}
+
+
+
